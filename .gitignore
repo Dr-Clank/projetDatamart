@@ -5,3 +5,5 @@
 hs_err_pid*
 
 ExempleSparkETL/files
+ExempleSparkETL/target
+ExempleSparkETL/project
