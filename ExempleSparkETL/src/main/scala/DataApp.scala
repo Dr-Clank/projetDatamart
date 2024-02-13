@@ -59,13 +59,27 @@ object DataApp {
 
 		var dim_category = json_business.select("business_id","categories")
 		dim_category = dim_category.withColumn("categories", explode(org.apache.spark.sql.functions.split(col("categories"), ",")))
-		dim_category = dim_category.withColumnRenamed("categories", "cacategory")
+		dim_category = dim_category.withColumnRenamed("categories", "category")
 
 	/* JSON Table Dim business */
 
 		var dim_business = json_business.select("business_id","name","stars","review_count","is_open")
+	
 
-		dim_users.show(30)
+/******************************************************************
+* CSV	
+*******************************************************************/
+		val businessCsvFile = "files/yelp_academic_dataset_tip.csv"
+		//dim_users.show(30)
+		//|_c0|_c1|_c2|_C3|_c4|
+		// |business_id|compliment_count|date|text|user_id|
+		var csv_business = spark.read.option("header","true").csv(businessCsvFile).cache()
+
+		var dim_csv_business = csv_business.select("business_id","compliment_count","date","user_id")
+
+		dim_csv_business = dim_csv_business.withColumn("unique_id", monotonically_increasing_id()+1)
+
+		dim_csv_business.show(5)
 		spark.stop()
 		
 	}
