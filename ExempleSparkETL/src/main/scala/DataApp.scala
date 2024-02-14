@@ -115,7 +115,12 @@ object DataApp {
 
 		fait_reviews.write.mode(SaveMode.Overwrite).jdbc(url2, "FACT_REVIEW", connectionProperties2)
 
-		dim_users.write.mode(SaveMode.Overwrite).jdbc(url2, "FACT_REVIEW", connectionProperties2)
+		dim_users.write.mode(SaveMode.Overwrite).jdbc(url2, "USER", connectionProperties2)
+
+		dim_category.write.mode(SaveMode.Overwrite).jdbc(url2, "CATEGORY", connectionProperties2)
+
+		location.write.mode(SaveMode.Overwrite).jdbc(url2, "LOCATION", connectionProperties2)
+
 
 		spark.stop()
 		
