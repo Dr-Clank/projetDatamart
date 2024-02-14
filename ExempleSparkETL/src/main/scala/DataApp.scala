@@ -8,9 +8,9 @@ object DataApp {
 		val spark = SparkSession.builder.appName("ETL").master("local[4]").getOrCreate()
 
 
-/*******************************************************************
-* Postgresql
-*******************************************************************/
+// /*******************************************************************
+// * Postgresql
+// *******************************************************************/
 
 
 		// Paramètres de la connexion BD
@@ -26,18 +26,20 @@ object DataApp {
 
 		// Enregistrement du DataFrame users dans la table "user"
 		var req = "(select user_id,name,useful,cool,fans,funny,review_count,average_stars from yelp.user) as q1"
-		var dim_users = spark.read.jdbc(url, req, connectionProperties)
+		var dim_users = spark.read.jdbc(url, req, connectionProperties).toDF("USER_ID","NAME", "USEFUL","COOL","FANS", "FUNNY", "REVIEW_COUNT", "AVERAGE_STAR")
 
-		dim_users = dim_users.withColumn("unique_id", monotonically_increasing_id()+1)
+		//dim_users = dim_users.withColumn("unique_id", monotonically_increasing_id()+1)
+
+		//dim_users.show(1)
 
 	/* PostgresSQL Table Fait Review */
 
 		// Enregistrement du DataFrame reviews dans la table "review"
 		var req1 = "(select review_id,business_id,user_id,date,stars,useful,cool from yelp.review) as q2"
-		var fait_reviews = spark.read.jdbc(url, req1, connectionProperties)
-        fait_reviews = fait_reviews.withColumn("date", col("date").cast(DateType))
+		var fait_reviews = spark.read.jdbc(url, req1, connectionProperties).toDF("REVIEW_ID", "BUSINESS_ID", "USER_ID", "DATE", "STARS", "USEFUL", "COOL")
+        fait_reviews = fait_reviews.withColumn("DATE", col("DATE").cast(DateType))
 
-		fait_reviews = fait_reviews.withColumn("unique_id", monotonically_increasing_id()+1)
+		//fait_reviews.show(1)
 
 /*******************************************************************
 * JSON
@@ -50,47 +52,71 @@ object DataApp {
 		var json_business = spark.read.json(businessFile).cache()
 		var dim_checkin = spark.read.json(checkinFile).cache()
 
-	/* JSON Table Dim Localisation */
+	// /* JSON Table Dim Localisation */
 
-		var location = json_business.select("business_id","address","city","state","postal_code","latitude","longitude")
+	// 	var location = json_business.select("business_id","address","city","state","postal_code","latitude","longitude")
 
-		location = location.withColumn("unique_id", monotonically_increasing_id()+1)
+	// 	location = location.withColumn("unique_id", monotonically_increasing_id()+1)
 
-	/* JSON Table Dim Checkin */
+	// 	location.show(1)
 
-		dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ",")))
-		dim_checkin.withColumn("date", col("date").cast(DateType))
+	// /* JSON Table Dim Checkin */
 
-		dim_checkin = dim_checkin.withColumn("unique_id", monotonically_increasing_id()+1)
+	// 	dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ",")))
+	// 	dim_checkin.withColumn("date", col("date").cast(DateType))
 
-	/* JSON Table Dim Categorie */
+	// 	dim_checkin = dim_checkin.withColumn("unique_id", monotonically_increasing_id()+1)
 
-		var dim_category = json_business.select("business_id","categories")
-		dim_category = dim_category.withColumn("categories", explode(org.apache.spark.sql.functions.split(col("categories"), ",")))
-		dim_category = dim_category.withColumnRenamed("categories", "category")
+	// 	dim_checkin.show(1)
 
-		dim_category = dim_category.withColumn("unique_id", monotonically_increasing_id()+1)
+	// /* JSON Table Dim Categorie */
+
+		var dim_category = json_business.select("business_id","categories").toDF("BUSINESS_ID", "CATEGORIES")
+		dim_category = dim_category.withColumn("CATEGORIES", explode(org.apache.spark.sql.functions.split(col("CATEGORIES"), ",")))
+		dim_category = dim_category.withColumnRenamed("CATEGORIES", "CATEGORY")
+
+	// 	dim_category = dim_category.withColumn("unique_id", monotonically_increasing_id()+1)
+
+	// 	dim_category.show(1)
 
 	/* JSON Table Dim business */
 
-		var dim_business = json_business.select("business_id","name","stars","review_count","is_open")
-	
-		dim_business = dim_business.withColumn("unique_id", monotonically_increasing_id()+1)
+		var dim_business = json_business.select("business_id","name","stars","review_count","is_open").toDF("BUSINESS_ID","NAME", "STARS", "REVIEW_COUNT", "IS_OPEN")
 
-/******************************************************************
-* CSV	
-*******************************************************************/
-		val businessCsvFile = "files/yelp_academic_dataset_tip.csv"
-		//dim_users.show(30)
-		//|_c0|_c1|_c2|_C3|_c4|
-		// |business_id|compliment_count|date|text|user_id|
-		var csv_business = spark.read.option("header","true").csv(businessCsvFile).cache()
+		//dim_business.show(1)
 
-		var dim_csv_business = csv_business.select("business_id","compliment_count","date","user_id")
+// /******************************************************************
+// * CSV	
+// *******************************************************************/
+// 		val businessCsvFile = "files/yelp_academic_dataset_tip.csv"
+// 		//dim_users.show(30)
+// 		//|_c0|_c1|_c2|_C3|_c4|
+// 		// |business_id|compliment_count|date|text|user_id|
+// 		var csv_business = spark.read.option("header","true").csv(businessCsvFile).cache()
 
-		dim_csv_business = dim_csv_business.withColumn("unique_id", monotonically_increasing_id()+1)
+// 		var dim_csv_business = csv_business.select("business_id","compliment_count","date","user_id")
 
-		dim_csv_business.show(5)
+// 		//dim_csv_business = dim_csv_business.withColumn("unique_id", monotonically_increasing_id()+1)
+		
+// 		dim_csv_business.show(1)
+
+
+
+		import java.util.Properties
+		// // Paramètres de la connexion BD
+		Class.forName("oracle.jdbc.driver.OracleDriver")
+        val url2 = "jdbc:oracle:thin:@stendhal:1521:enss2023"
+        val connectionProperties2 = new Properties()
+        connectionProperties2.setProperty("driver", "oracle.jdbc.driver.OracleDriver")
+        connectionProperties2.setProperty("user", "mo407000")
+        connectionProperties2.setProperty("password","mo407000")
+		
+		dim_business.write.mode(SaveMode.Overwrite).jdbc(url2, "BUSINESS", connectionProperties2)
+
+		fait_reviews.write.mode(SaveMode.Overwrite).jdbc(url2, "FACT_REVIEW", connectionProperties2)
+
+		dim_users.write.mode(SaveMode.Overwrite).jdbc(url2, "FACT_REVIEW", connectionProperties2)
+
 		spark.stop()
 		
 	}
