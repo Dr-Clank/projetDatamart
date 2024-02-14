@@ -54,7 +54,7 @@ object DataApp {
 
 	// /* JSON Table Dim Localisation */
 
-	// 	var location = json_business.select("business_id","address","city","state","postal_code","latitude","longitude")
+	 	var location = json_business.select("business_id","address","city","state","postal_code","latitude","longitude").toDF("BUSINESS_ID", "ADRESSE", "CITY", "STATE", "POSTAL_CODE", "LATITUDE", "LONGITUDE")
 
 	// 	location = location.withColumn("unique_id", monotonically_increasing_id()+1)
 
@@ -62,8 +62,8 @@ object DataApp {
 
 	// /* JSON Table Dim Checkin */
 
-	// 	dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ",")))
-	// 	dim_checkin.withColumn("date", col("date").cast(DateType))
+		dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ",")))
+		dim_checkin.withColumn("date", col("date").cast(DateType))
 
 	// 	dim_checkin = dim_checkin.withColumn("unique_id", monotonically_increasing_id()+1)
 
