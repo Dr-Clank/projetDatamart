@@ -88,7 +88,7 @@ object DataApp {
 // /******************************************************************
 // * CSV	
 // *******************************************************************/
-// 		val businessCsvFile = "files/yelp_academic_dataset_tip.csv"
+// 		val businessCsvFile = "files/yelp_a-cademic_dataset_tip.csv"
 // 		//dim_users.show(30)
 // 		//|_c0|_c1|_c2|_C3|_c4|
 // 		// |business_id|compliment_count|date|text|user_id|
