@@ -28,10 +28,6 @@ object DataApp {
 		var req = "(select user_id,name,useful,cool,fans,funny,review_count,average_stars from yelp.user) as q1"
 		var dim_users = spark.read.jdbc(url, req, connectionProperties).toDF("USER_ID","NAME", "USEFUL","COOL","FANS", "FUNNY", "REVIEW_COUNT", "AVERAGE_STAR")
 
-		//dim_users = dim_users.withColumn("unique_id", monotonically_increasing_id()+1)
-
-		//dim_users.show(1)
-
 	/* PostgresSQL Table Fait Review */
 
 		// Enregistrement du DataFrame reviews dans la table "review"
@@ -39,7 +35,6 @@ object DataApp {
 		var fait_reviews = spark.read.jdbc(url, req1, connectionProperties).toDF("REVIEW_ID", "BUSINESS_ID", "USER_ID", "DATE", "STARS", "USEFUL", "COOL")
         fait_reviews = fait_reviews.withColumn("DATE", col("DATE").cast(DateType))
 
-		//fait_reviews.show(1)
 
 /*******************************************************************
 * JSON
@@ -56,18 +51,13 @@ object DataApp {
 
 	 	var location = json_business.select("business_id","address","city","state","postal_code","latitude","longitude").toDF("BUSINESS_ID", "ADRESSE", "CITY", "STATE", "POSTAL_CODE", "LATITUDE", "LONGITUDE")
 
-	// 	location = location.withColumn("unique_id", monotonically_increasing_id()+1)
 
 	// 	location.show(1)
 
 	// /* JSON Table Dim Checkin */
 
 		dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ","))).toDF("BUSINESS_ID","DATE")
-		dim_checkin.withColumn("DATE_VALUE", col("DATE").cast(DateType))
-
-	// 	dim_checkin = dim_checkin.withColumn("unique_id", monotonically_increasing_id()+1)
-
-	// 	dim_checkin.show(1)
+		dim_checkin.withColumn("DATE_VALUE", col("DATE").cast(DateType)
 
 	// /* JSON Table Dim Categorie */
 
@@ -75,11 +65,6 @@ object DataApp {
 		dim_category = dim_category.withColumn("CATEGORIES", explode(org.apache.spark.sql.functions.split(col("CATEGORIES"), ",")))
 		dim_category = dim_category.withColumnRenamed("CATEGORIES", "CATEGORY")
 		dim_category = dim_category.withColumn("CATEGORY",lower(trim(col("CATEGORY"))))
-
-	// 	dim_category = dim_category.withColumn("unique_id", monotonically_increasing_id()+1)
-
-	// 	dim_category.show(1)
-
 	/* JSON Table Dim business */
 
 		var dim_business = json_business.select("business_id","name","stars","review_count","is_open").toDF("BUSINESS_ID","NAME", "STARS", "REVIEW_COUNT", "IS_OPEN")
@@ -93,8 +78,6 @@ object DataApp {
 		var food_filtered_catego = spark.read.option("header","true").csv(foodCategoCsvFile).cache()
 
 		var dim_food_category = food_filtered_catego.select("Category").toDF("FOOD_CATEGORY")
-
-		//dim_csv_business = dim_csv_business.withColumn("unique_id", monotonically_increasing_id()+1)
 
 
 		import java.util.Properties
