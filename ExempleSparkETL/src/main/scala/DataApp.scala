@@ -51,20 +51,17 @@ object DataApp {
 
 	 	var location = json_business.select("business_id","address","city","state","postal_code","latitude","longitude").toDF("BUSINESS_ID", "ADRESSE", "CITY", "STATE", "POSTAL_CODE", "LATITUDE", "LONGITUDE")
 
-
-	// 	location.show(1)
-
 	// /* JSON Table Dim Checkin */
 
 		dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ","))).toDF("BUSINESS_ID","DATE")
-		dim_checkin.withColumn("DATE_VALUE", col("DATE").cast(DateType)
+		dim_checkin.withColumn("DATE_VALUE", col("DATE").cast(DateType))
 
 	// /* JSON Table Dim Categorie */
 
 		var dim_category = json_business.select("business_id","categories").toDF("BUSINESS_ID", "CATEGORIES")
 		dim_category = dim_category.withColumn("CATEGORIES", explode(org.apache.spark.sql.functions.split(col("CATEGORIES"), ",")))
+		dim_category = dim_category.withColumn("CATEGORIES",lower(trim(col("CATEGORIES"))))
 		dim_category = dim_category.withColumnRenamed("CATEGORIES", "CATEGORY")
-		dim_category = dim_category.withColumn("CATEGORY",lower(trim(col("CATEGORY"))))
 	/* JSON Table Dim business */
 
 		var dim_business = json_business.select("business_id","name","stars","review_count","is_open").toDF("BUSINESS_ID","NAME", "STARS", "REVIEW_COUNT", "IS_OPEN")
@@ -91,7 +88,7 @@ object DataApp {
 		
 		dim_business.write.mode(SaveMode.Overwrite).jdbc(url2, "BUSINESS", connectionProperties2)
 
-		fait_reviews.write.mode(SaveMode.Overwrite).jdbc(url2, "FACT_REVIEW", connectionProperties2)
+		fait_reviews.write.mode(SaveMode.Overwrite).jdbc(url2, "REVIEW", connectionProperties2)
 
 		dim_users.write.mode(SaveMode.Overwrite).jdbc(url2, "USER_YELP", connectionProperties2)
 
