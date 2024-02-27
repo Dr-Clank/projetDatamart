@@ -62,8 +62,8 @@ object DataApp {
 
 	// /* JSON Table Dim Checkin */
 
-		dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ",")))
-		dim_checkin.withColumn("date", col("date").cast(DateType))
+		dim_checkin = dim_checkin.withColumn("date", explode(org.apache.spark.sql.functions.split(col("date"), ","))).toDF("BUSINESS_ID","DATE")
+		dim_checkin.withColumn("DATE_VALUE", col("DATE").cast(DateType))
 
 	// 	dim_checkin = dim_checkin.withColumn("unique_id", monotonically_increasing_id()+1)
 
@@ -74,6 +74,7 @@ object DataApp {
 		var dim_category = json_business.select("business_id","categories").toDF("BUSINESS_ID", "CATEGORIES")
 		dim_category = dim_category.withColumn("CATEGORIES", explode(org.apache.spark.sql.functions.split(col("CATEGORIES"), ",")))
 		dim_category = dim_category.withColumnRenamed("CATEGORIES", "CATEGORY")
+		dim_category = dim_category.withColumn("CATEGORY",lower(trim(col("CATEGORY"))))
 
 	// 	dim_category = dim_category.withColumn("unique_id", monotonically_increasing_id()+1)
 
@@ -88,18 +89,12 @@ object DataApp {
 // /******************************************************************
 // * CSV	
 // *******************************************************************/
-// 		val businessCsvFile = "files/yelp_a-cademic_dataset_tip.csv"
-// 		//dim_users.show(30)
-// 		//|_c0|_c1|_c2|_C3|_c4|
-// 		// |business_id|compliment_count|date|text|user_id|
-// 		var csv_business = spark.read.option("header","true").csv(businessCsvFile).cache()
+		val foodCategoCsvFile = "files/category.csv"
+		var food_filtered_catego = spark.read.option("header","true").csv(foodCategoCsvFile).cache()
 
-// 		var dim_csv_business = csv_business.select("business_id","compliment_count","date","user_id")
+		var dim_food_category = food_filtered_catego.select("Category").toDF("FOOD_CATEGORY")
 
-// 		//dim_csv_business = dim_csv_business.withColumn("unique_id", monotonically_increasing_id()+1)
-		
-// 		dim_csv_business.show(1)
-
+		//dim_csv_business = dim_csv_business.withColumn("unique_id", monotonically_increasing_id()+1)
 
 
 		import java.util.Properties
@@ -115,11 +110,15 @@ object DataApp {
 
 		fait_reviews.write.mode(SaveMode.Overwrite).jdbc(url2, "FACT_REVIEW", connectionProperties2)
 
-		dim_users.write.mode(SaveMode.Overwrite).jdbc(url2, "USER", connectionProperties2)
+		dim_users.write.mode(SaveMode.Overwrite).jdbc(url2, "USER_YELP", connectionProperties2)
 
 		dim_category.write.mode(SaveMode.Overwrite).jdbc(url2, "CATEGORY", connectionProperties2)
 
 		location.write.mode(SaveMode.Overwrite).jdbc(url2, "LOCATION", connectionProperties2)
+
+		dim_checkin.write.mode(SaveMode.Overwrite).jdbc(url2, "CHECKIN", connectionProperties2)
+
+		dim_food_category.write.mode(SaveMode.Overwrite).jdbc(url2, "FOOD_CATEGORY", connectionProperties2)
 
 
 		spark.stop()
