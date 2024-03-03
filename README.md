@@ -1,6 +1,6 @@
 # lieu des fichiers
 
-Veuillez placer les fichiers Json et CSV dans le dossier' projetDatamart/ProjetETL/files'
+Veuillez placer les fichiers Json et CSV dans le dossier 'projetDatamart/ProjetETL/files'
 
 # projetDatamart
 
